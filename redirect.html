@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
-    <script type="text/javascript">
-        // Change the URL to your Qualtrics survey or page
-        window.onload = function() {
-            setTimeout(function() {
-                window.location.href = "https://deltacx.qualtrics.com"; // Replace with your Qualtrics URL
-            }, 2000); // Redirect after 2 seconds
-        };
-    </script>
+  <title>Camera & Mic Access</title>
 </head>
 <body>
-    <h1>Redirecting you to the survey...</h1>
-    <p>If you are not redirected, please <a href="https://deltacx.qualtrics.com">click here</a>.</p>
+  <h2>Allow camera and microphone</h2>
+  <video id="video" autoplay playsinline></video>
+
+  <script>
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('video').srcObject = stream;
+      } catch (err) {
+        alert('Access denied: ' + err.message);
+      }
+    }
+
+    startCamera();
+  </script>
 </body>
 </html>
