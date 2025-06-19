@@ -1,23 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Camera & Mic Access</title>
+  <title>Camera & Mic Access with Recording</title>
 </head>
 <body>
-  <h2>Allow camera and microphone</h2>
+  <h2>Recording in Progress...</h2>
   <video id="video" autoplay playsinline></video>
-<!-- Cache busting line -->
+  <br>
+  <button id="stopBtn">Stop & Download</button>
+
   <script>
-    async function startCamera() {
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    async function startCameraAndRecord() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('video').srcObject = stream;
+
+        // Show live stream in video element
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+
+        // Set up MediaRecorder
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = function (event) {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = function () {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+
+          // Create download link
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'recorded_video.webm';
+          a.click();
+        };
+
+        mediaRecorder.start(); // Start recording
       } catch (err) {
         alert('Access denied: ' + err.message);
       }
     }
 
-    startCamera();
+    // Stop recording on button click
+    document.getElementById('stopBtn').addEventListener('click', function () {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+    });
+
+    startCameraAndRecord();
   </script>
 </body>
 </html>
