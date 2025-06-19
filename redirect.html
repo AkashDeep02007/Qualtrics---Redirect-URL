@@ -1,76 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Camera & Mic Access with Recording</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 30px;
-    }
-    video {
-      width: 90%;
-      max-width: 400px;
-      border: 2px solid #333;
-    }
-    #stopBtn {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 15px;
-      background-color: #c0392b;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-  </style>
+  <title>Record Video</title>
 </head>
 <body>
-  <h2>Recording in Progress...</h2>
+  <h2>Camera and Microphone Recorder</h2>
   <video id="video" autoplay playsinline></video>
-  <br>
-  <button id="stopBtn">Stop & Download</button>
-<!-- Cache busting line -->
+  <br/>
+  <button id="startBtn">Start Recording</button>
+  <button id="stopBtn" disabled>Stop Recording</button>
+  <a id="downloadLink" style="display:none;">Download Recording</a>
+
   <script>
     let mediaRecorder;
     let recordedChunks = [];
 
-    async function startCameraAndRecord() {
+    async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-
-        const video = document.getElementById('video');
-        video.srcObject = stream;
+        document.getElementById('video').srcObject = stream;
 
         mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = function (event) {
-          if (event.data.size > 0) {
-            recordedChunks.push(event.data);
-          }
+        mediaRecorder.ondataavailable = event => {
+          if (event.data.size > 0) recordedChunks.push(event.data);
         };
-
-        mediaRecorder.onstop = function () {
+        mediaRecorder.onstop = () => {
           const blob = new Blob(recordedChunks, { type: 'video/webm' });
           const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
+          const a = document.getElementById('downloadLink');
           a.href = url;
-          a.download = 'recorded_video.webm';
-          a.click();
+          a.download = 'recording.webm';
+          a.textContent = 'Download Recording';
+          a.style.display = 'block';
         };
 
-        mediaRecorder.start();
+        document.getElementById('startBtn').onclick = () => {
+          recordedChunks = [];
+          mediaRecorder.start();
+          document.getElementById('startBtn').disabled = true;
+          document.getElementById('stopBtn').disabled = false;
+        };
+
+        document.getElementById('stopBtn').onclick = () => {
+          mediaRecorder.stop();
+          document.getElementById('startBtn').disabled = false;
+          document.getElementById('stopBtn').disabled = true;
+        };
+
       } catch (err) {
-        alert('Access denied: ' + err.message);
+        alert('Error accessing camera/mic: ' + err.message);
       }
     }
 
-    document.getElementById('stopBtn').addEventListener('click', function () {
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-      }
-    });
-
-    startCameraAndRecord();
+    startCamera();
   </script>
 </body>
 </html>
