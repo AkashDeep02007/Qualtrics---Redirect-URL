@@ -2,6 +2,28 @@
 <html>
 <head>
   <title>Camera & Mic Access with Recording</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 30px;
+    }
+    video {
+      width: 90%;
+      max-width: 400px;
+      border: 2px solid #333;
+    }
+    #stopBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 15px;
+      background-color: #c0392b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <h2>Recording in Progress...</h2>
@@ -17,11 +39,9 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
-        // Show live stream in video element
         const video = document.getElementById('video');
         video.srcObject = stream;
 
-        // Set up MediaRecorder
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.ondataavailable = function (event) {
           if (event.data.size > 0) {
@@ -32,21 +52,18 @@
         mediaRecorder.onstop = function () {
           const blob = new Blob(recordedChunks, { type: 'video/webm' });
           const url = URL.createObjectURL(blob);
-
-          // Create download link
           const a = document.createElement('a');
           a.href = url;
           a.download = 'recorded_video.webm';
           a.click();
         };
 
-        mediaRecorder.start(); // Start recording
+        mediaRecorder.start();
       } catch (err) {
         alert('Access denied: ' + err.message);
       }
     }
 
-    // Stop recording on button click
     document.getElementById('stopBtn').addEventListener('click', function () {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
